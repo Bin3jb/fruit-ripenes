@@ -1,0 +1,86 @@
+### AI Fruit Ripeness Recognizer — request collection
+### Works in VS Code REST Client / JetBrains HTTP client. Run top to bottom.
+
+@api = http://localhost:3000/api
+@ml  = http://localhost:5001
+
+### health of every tier
+GET {{api}}/health
+
+### the ML service on its own (mode tells you which weights are loaded)
+GET {{ml}}/health
+
+### the taxonomy the UI renders
+GET {{api}}/detect/classes
+
+### register
+# @name register
+POST {{api}}/auth/register
+Content-Type: application/json
+
+{ "name": "Nawaf", "email": "nawaf@example.com", "password": "Password123", "language": "en" }
+
+### login
+# @name login
+POST {{api}}/auth/login
+Content-Type: application/json
+
+{ "email": "nawaf@example.com", "password": "Password123" }
+
+@token = {{login.response.body.token}}
+
+### detect (replace the path with a real image)
+# @name detect
+POST {{api}}/detect
+Authorization: Bearer {{token}}
+Content-Type: multipart/form-data; boundary=X
+
+--X
+Content-Disposition: form-data; name="image"; filename="banana.jpg"
+Content-Type: image/jpeg
+
+< ./samples/banana.jpg
+--X
+Content-Disposition: form-data; name="lang"
+
+en
+--X--
+
+@scan = {{detect.response.body.scanId}}
+
+### ask about that scan — grounded in its detections
+POST {{api}}/chat
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{ "question": "How should I store this?", "scanId": {{scan}}, "lang": "en" }
+
+### the same question in Arabic
+POST {{api}}/chat
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{ "question": "كيف أحفظها؟", "scanId": {{scan}}, "lang": "ar" }
+
+### correct a wrong stage — this becomes training data
+POST {{api}}/feedback
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{ "detectionId": 1, "correctedStage": "ripe", "message": "it was still fine" }
+
+### history and basket statistics
+GET {{api}}/detect/history
+Authorization: Bearer {{token}}
+
+###
+GET {{api}}/detect/stats
+Authorization: Bearer {{token}}
+
+### admin (log in as the seeded admin first)
+GET {{api}}/admin/metrics
+Authorization: Bearer {{token}}
+
+###
+GET {{api}}/admin/retraining-set
+Authorization: Bearer {{token}}

@@ -1,0 +1,11 @@
+__pycache__
+*.pyc
+.venv
+.pytest_cache
+.env
+annotated/*
+!annotated/.gitkeep
+runs
+dataset
+raw
+reports

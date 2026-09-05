@@ -1,0 +1,23 @@
+* text=auto eol=lf
+
+*.py    text
+*.js    text
+*.json  text
+*.md    text
+*.sql   text
+*.yml   text
+*.html  text
+*.css   text
+*.sh    text eol=lf
+
+# Binaries — never diffed, never normalised
+*.pt    binary
+*.pth   binary
+*.png   binary
+*.jpg   binary
+*.jpeg  binary
+*.pdf   binary
+*.pptx  binary
+
+# Keep generated/vendored files out of language statistics
+docs/poster-assets/* linguist-documentation

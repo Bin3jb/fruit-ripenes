@@ -1,0 +1,54 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  ml-service:
+    name: ML service (pytest)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+          cache: pip
+      # The suite stubs the detector, so torch and the weights are not needed.
+      - name: Install test dependencies
+        run: pip install flask opencv-python-headless numpy pytest
+      - name: Run tests
+        working-directory: ml-service
+        run: python -m pytest tests -q
+
+  backend:
+    name: Backend (node --test)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: npm
+          cache-dependency-path: backend/package-lock.json
+      - name: Install
+        working-directory: backend
+        run: npm ci
+      - name: Run tests
+        working-directory: backend
+        run: npm test
+
+  syntax:
+    name: Syntax check
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: { node-version: '20' }
+      - uses: actions/setup-python@v5
+        with: { python-version: '3.11' }
+      - name: Frontend scripts parse
+        run: for f in frontend/js/*.js; do node --check "$f"; done
+      - name: Python files compile
+        run: python -m compileall -q ml-service

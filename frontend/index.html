@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Fruit Ripeness Recognizer</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@400;500;600&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+<header class="topbar">
+  <div class="brand">
+    <span class="logo" aria-hidden="true">◕</span>
+    <span data-i18n="app.title">Fruit Ripeness Recognizer</span>
+  </div>
+  <div class="topbar-actions">
+    <button id="langToggle" class="ghost" type="button">العربية</button>
+    <span id="userChip" class="chip hidden"></span>
+    <button id="logoutBtn" class="ghost hidden" type="button" data-i18n="nav.logout">Sign out</button>
+  </div>
+</header>
+
+<!-- ------------------------------------------------------------------ auth -->
+<main id="authView" class="auth-wrap">
+  <section class="auth-card">
+    <div class="tabs">
+      <button class="tab active" data-tab="login" data-i18n="auth.login">Sign in</button>
+      <button class="tab" data-tab="register" data-i18n="auth.register">Create account</button>
+    </div>
+
+    <form id="loginForm" class="form">
+      <label data-i18n="auth.email">Email</label>
+      <input type="email" name="email" required autocomplete="email">
+      <label data-i18n="auth.password">Password</label>
+      <input type="password" name="password" required autocomplete="current-password">
+      <button class="primary" type="submit" data-i18n="auth.login">Sign in</button>
+    </form>
+
+    <form id="registerForm" class="form hidden">
+      <label data-i18n="auth.name">Name</label>
+      <input type="text" name="name" required minlength="2">
+      <label data-i18n="auth.email">Email</label>
+      <input type="email" name="email" required autocomplete="email">
+      <label data-i18n="auth.password">Password</label>
+      <input type="password" name="password" required minlength="8" autocomplete="new-password">
+      <small data-i18n="auth.passwordHint">At least 8 characters.</small>
+      <button class="primary" type="submit" data-i18n="auth.register">Create account</button>
+    </form>
+
+    <p id="authError" class="error" role="alert"></p>
+  </section>
+</main>
+
+<!-- ------------------------------------------------------------------- app -->
+<main id="appView" class="app hidden">
+  <nav class="sidenav">
+    <button class="nav-item active" data-view="scan" data-i18n="nav.scan">Scan</button>
+    <button class="nav-item" data-view="history" data-i18n="nav.history">History</button>
+    <button class="nav-item" data-view="basket" data-i18n="nav.basket">My basket</button>
+    <button class="nav-item" data-view="account" data-i18n="nav.account">Account</button>
+    <button class="nav-item hidden" id="adminNav" data-view="admin" data-i18n="nav.admin">Admin</button>
+  </nav>
+
+  <div class="content">
+    <!-- scan -->
+    <section id="view-scan" class="view">
+      <div class="grid">
+        <div class="panel">
+          <h2 data-i18n="scan.title">Upload a photo</h2>
+          <div id="dropzone" class="dropzone" tabindex="0" role="button">
+            <p data-i18n="scan.drop">Drop an image here, or click to choose</p>
+            <small data-i18n="scan.formats">JPG, PNG or WEBP · up to 10 MB</small>
+            <input id="fileInput" type="file" accept="image/*" hidden>
+          </div>
+          <img id="preview" class="preview hidden" alt="">
+          <button id="analyzeBtn" class="primary full hidden" data-i18n="scan.analyze">Analyse ripeness</button>
+          <p id="scanError" class="error" role="alert"></p>
+        </div>
+
+        <div class="panel">
+          <h2 data-i18n="scan.results">Results</h2>
+          <div id="spinner" class="spinner hidden"><span></span><p data-i18n="scan.working">Running the detector…</p></div>
+          <div id="resultEmpty" class="empty" data-i18n="scan.empty">No scan yet. Upload a photo to begin.</div>
+          <img id="annotated" class="preview hidden" alt="">
+          <div id="detections" class="detections"></div>
+          <div id="meta" class="meta"></div>
+        </div>
+      </div>
+
+      <div class="panel chat-panel">
+        <h2 data-i18n="chat.title">Ask about this fruit</h2>
+        <div id="chatLog" class="chat-log"></div>
+        <div class="suggestions" id="suggestions"></div>
+        <form id="chatForm" class="chat-form">
+          <input id="chatInput" type="text" autocomplete="off" placeholder="How should I store this?">
+          <button class="primary" type="submit" data-i18n="chat.send">Send</button>
+        </form>
+      </div>
+    </section>
+
+    <!-- history -->
+    <section id="view-history" class="view hidden">
+      <h2 data-i18n="history.title">Previous scans</h2>
+      <p class="lede" data-i18n="history.hint">Select a scan to reopen it and keep asking about it.</p>
+      <div id="historyList" class="history-list"></div>
+    </section>
+
+    <!-- basket -->
+    <section id="view-basket" class="view hidden">
+      <h2 data-i18n="basket.title">My basket</h2>
+      <p class="lede" data-i18n="basket.lede">Everything you have scanned, grouped by ripeness. The overripe column is the food that was already lost.</p>
+      <div id="basketStats" class="stat-row"></div>
+      <div id="basketTable"></div>
+    </section>
+
+    <!-- account -->
+    <section id="view-account" class="view hidden">
+      <h2 data-i18n="account.title">Account</h2>
+      <div class="panel narrow">
+        <form id="passwordForm" class="form">
+          <label data-i18n="account.current">Current password</label>
+          <input type="password" name="currentPassword" required>
+          <label data-i18n="account.new">New password</label>
+          <input type="password" name="newPassword" required minlength="8">
+          <button class="primary" type="submit" data-i18n="account.change">Change password</button>
+        </form>
+        <p id="accountMsg" class="notice"></p>
+      </div>
+      <div class="panel narrow">
+        <h3 data-i18n="feedback.title">Send feedback</h3>
+        <form id="feedbackForm" class="form">
+          <textarea name="message" rows="4" required></textarea>
+          <button class="primary" type="submit" data-i18n="feedback.send">Send feedback</button>
+        </form>
+        <p id="feedbackMsg" class="notice"></p>
+        <h3 data-i18n="feedback.mine">What you have sent</h3>
+        <div id="myFeedback"></div>
+      </div>
+    </section>
+
+    <!-- admin -->
+    <section id="view-admin" class="view hidden">
+      <h2 data-i18n="admin.title">Administration</h2>
+      <div id="adminMetrics" class="stat-row"></div>
+      <h3 data-i18n="admin.feedback">User feedback and corrections</h3>
+      <div id="adminFeedback"></div>
+    </section>
+  </div>
+</main>
+
+<script src="js/i18n.js"></script>
+<script src="js/api.js"></script>
+<script src="js/app.js"></script>
+</body>
+</html>

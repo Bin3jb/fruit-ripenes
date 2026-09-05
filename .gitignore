@@ -1,0 +1,41 @@
+# --- secrets -----------------------------------------------------------
+.env
+.env.*
+!.env.example
+
+# --- node --------------------------------------------------------------
+node_modules/
+npm-debug.log*
+.npm/
+
+# --- python ------------------------------------------------------------
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+.pytest_cache/
+.coverage
+htmlcov/
+
+# --- model weights and training artefacts ------------------------------
+# Checkpoints are large binaries; keep them out of git (see ml-service/models/README.md)
+*.pt
+*.pth
+*.onnx
+ml-service/runs/
+ml-service/dataset/
+ml-service/raw/
+ml-service/reports/
+
+# --- runtime output ----------------------------------------------------
+backend/uploads/*
+!backend/uploads/.gitkeep
+ml-service/annotated/*
+!ml-service/annotated/.gitkeep
+
+# --- editors / os ------------------------------------------------------
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/
+*.swp
